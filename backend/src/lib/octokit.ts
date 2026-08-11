@@ -19,17 +19,19 @@ export const personalOctokit = (token: string) => {
           `Request quota exhausted for request ${options.method} ${options.url} - retrying in ${retryAfter} seconds`,
         );
 
-        if (retryCount < 1) {
-          // only retries once
+        if (retryCount < 3) {
           octokit.log.info(`Retry attempt ${retryCount + 1}, retrying...`);
           return true;
         }
       },
-      onSecondaryRateLimit: (retryAfter, options, octokit) => {
-        // does not retry, only logs a warning
+      onSecondaryRateLimit: (retryAfter, options, octokit, retryCount) => {
         octokit.log.warn(
-          `SecondaryRateLimit detected for request ${options.method} ${options.url}`,
+          `SecondaryRateLimit detected for request ${options.method} ${options.url} - waiting ${retryAfter}s before retry ${retryCount + 1}`,
         );
+        // Retry up to 3 times, honouring the Retry-After header
+        if (retryCount < 3) {
+          return true;
+        }
       },
     },
   });
