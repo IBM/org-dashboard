@@ -346,7 +346,7 @@ const HeaderCellRenderer = <R = unknown,>({
             // The click handler here is used to stop the header from being sorted
             <Box
               className="shadow-xl min-w-64 p-4 rounded"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
               sx={{
                 backgroundColor: 'Background',
                 border: '1px solid',
