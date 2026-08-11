@@ -1,4 +1,4 @@
-# Org Metrics Dashboard
+# IBM Org Metrics Dashboard
 
 An actions-powered dashboard to get an overview of your organization's open source repository health.
 
