@@ -34,6 +34,15 @@ export const Layout: FC<PropsWithChildren> = ({ children }) => {
           This project includes metrics about the Open Source repositories for{' '}
           {data.orgInfo.name}.
         </Text>
+        <Text className="text-xs" sx={{ color: 'fg.muted' }}>
+          Last updated:{' '}
+          {new Date(data.meta.createdAt).toLocaleString('en-US', {
+            dateStyle: 'long',
+            timeStyle: 'short',
+            timeZone: 'UTC',
+          })}{' '}
+          UTC
+        </Text>
       </Box>
       {!isSSR && showBanner && (
         <Box className="mt-6">

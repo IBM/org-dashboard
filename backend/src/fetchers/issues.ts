@@ -8,7 +8,44 @@ import {
   RepositoryConnection,
 } from '@octokit/graphql-schema';
 import { Config, Fetcher } from '..';
-import { CustomOctokit } from '../lib/octokit';
+import { checkRateLimit, CustomOctokit } from '../lib/octokit';
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Waits until the primary rate limit has enough headroom.
+ * Called before each parallel batch so we don't start a batch we can't finish.
+ */
+const throttleForRateLimit = async (
+  octokit: CustomOctokit,
+  minRemaining = 100,
+) => {
+  const { remaining, reset } = await checkRateLimit(octokit);
+  if (remaining <= minRemaining) {
+    const waitMs = reset * 1000 - Date.now() + 5_000; // wait until reset + 5s buffer
+    console.log(
+      `⏳  Rate limit low (${remaining} remaining) — waiting ${Math.round(waitMs / 1000)}s for reset`,
+    );
+    await sleep(waitMs > 0 ? waitMs : 5_000);
+  }
+};
+
+/**
+ * Runs tasks with a fixed concurrency limit.
+ * Processes `tasks` in chunks of `concurrency` at a time.
+ */
+const runWithConcurrency = async <T>(
+  tasks: (() => Promise<T>)[],
+  concurrency: number,
+): Promise<T[]> => {
+  const results: T[] = [];
+  for (let i = 0; i < tasks.length; i += concurrency) {
+    const batch = tasks.slice(i, i + concurrency);
+    const batchResults = await Promise.all(batch.map((t) => t()));
+    results.push(...batchResults);
+  }
+  return results;
+};
 
 const getIssueAndPrData = async (octokit: CustomOctokit, config: Config) => {
   const issueData = await octokit.graphql.paginate<{
@@ -32,7 +69,7 @@ const getIssueAndPrData = async (octokit: CustomOctokit, config: Config) => {
     `
   query($cursor: String, $organization: String!) {
     organization(login:$organization){
-      repositories(privacy:PUBLIC, first:100, isFork:false, isArchived:false, after: $cursor) {
+      repositories(privacy:PUBLIC, first:25, isFork:false, isArchived:false, after: $cursor) {
         totalCount
         pageInfo {
           hasNextPage
@@ -243,8 +280,27 @@ const calculateIssueResponseTime = async (
   };
 };
 
+// Number of repos to process in parallel. 10 concurrent × 3 calls = 30 in-flight
+// requests at a time, which comfortably fits within GitHub's secondary rate limits.
+const ISSUE_METRICS_CONCURRENCY = 10;
+
 export const addIssueMetricsData: Fetcher = async (result, octokit, config) => {
-  for (const repoName of Object.keys(result.repositories)) {
+  const repoNames = Object.keys(result.repositories);
+  console.log(
+    `📊  Fetching issue metrics for ${repoNames.length} repositories (concurrency: ${ISSUE_METRICS_CONCURRENCY})`,
+  );
+
+  const tasks = repoNames.map((repoName, index) => async () => {
+    // Check rate limit headroom before each batch boundary (every CONCURRENCY repos)
+    if (index % ISSUE_METRICS_CONCURRENCY === 0) {
+      if (index > 0) {
+        console.log(
+          `📊  Progress: ${index}/${repoNames.length} repositories processed`,
+        );
+      }
+      await throttleForRateLimit(octokit);
+    }
+
     const {
       issuesAverageAge: openIssuesAverageAge,
       issuesMedianAge: openIssuesMedianAge,
@@ -258,13 +314,27 @@ export const addIssueMetricsData: Fetcher = async (result, octokit, config) => {
     const { issuesResponseAverageAge, issuesResponseMedianAge } =
       await calculateIssueResponseTime(repoName, octokit, config);
 
-    const repo = result.repositories[repoName];
-    repo.openIssuesAverageAge = openIssuesAverageAge;
-    repo.openIssuesMedianAge = openIssuesMedianAge;
-    repo.closedIssuesAverageAge = closedIssuesAverageAge;
-    repo.closedIssuesMedianAge = closedIssuesMedianAge;
-    repo.issuesResponseAverageAge = issuesResponseAverageAge;
-    repo.issuesResponseMedianAge = issuesResponseMedianAge;
+    return {
+      repoName,
+      openIssuesAverageAge,
+      openIssuesMedianAge,
+      closedIssuesAverageAge,
+      closedIssuesMedianAge,
+      issuesResponseAverageAge,
+      issuesResponseMedianAge,
+    };
+  });
+
+  const allMetrics = await runWithConcurrency(tasks, ISSUE_METRICS_CONCURRENCY);
+
+  for (const metrics of allMetrics) {
+    const repo = result.repositories[metrics.repoName];
+    repo.openIssuesAverageAge = metrics.openIssuesAverageAge;
+    repo.openIssuesMedianAge = metrics.openIssuesMedianAge;
+    repo.closedIssuesAverageAge = metrics.closedIssuesAverageAge;
+    repo.closedIssuesMedianAge = metrics.closedIssuesMedianAge;
+    repo.issuesResponseAverageAge = metrics.issuesResponseAverageAge;
+    repo.issuesResponseMedianAge = metrics.issuesResponseMedianAge;
   }
 
   return result;
