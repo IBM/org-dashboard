@@ -151,7 +151,7 @@ const MinMaxRenderer: FC<{
                 }));
               }}
               onKeyDown={inputStopPropagation}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
             />
           </FormControl>
           <FormControl>
@@ -171,7 +171,7 @@ const MinMaxRenderer: FC<{
                 })
               }
               onKeyDown={inputStopPropagation}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
             />
           </FormControl>
         </Box>
