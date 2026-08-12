@@ -1,6 +1,4 @@
-/* eslint-disable primer-react/a11y-tooltip-interactive-trigger */
 import {
-  InfoIcon,
   TriangleDownIcon,
   TriangleUpIcon,
   XIcon,
@@ -12,9 +10,7 @@ import {
   Button,
   Checkbox,
   FormControl,
-  Text,
   TextInput,
-  Tooltip,
 } from '@primer/react';
 import { json2csv } from 'json-2-csv';
 import DataGrid, {
@@ -747,8 +743,6 @@ const RepositoriesTable = () => {
     ([_, columnProps]) => columnProps,
   );
 
-  const subTitle = `${repos.length} total repositories`;
-
   const [sortColumns, setSortColumns] = useState<SortColumn[]>([]);
 
   const sortRepos = (inputRepos: RepositoryResult[]) => {
@@ -895,32 +889,11 @@ const RepositoriesTable = () => {
   );
 
   const displayRows = filterRepos(sortRepos(repos));
-  const createdDate = new Date(Data.meta.createdAt);
 
   return (
     <Box className="h-full flex flex-col">
       <Box className="py-2">
         <Box className="flex flex-row items-center justify-between">
-          <Box className="flex flex-row space-x-4 justify-start items-center">
-            <Box className="flex flex-row items-center space-x-1">
-              <Tooltip aria-label="All of the repositories in this organization">
-                <InfoIcon size={24} />
-              </Tooltip>
-              <Text as="p" className="text-sm">
-                {subTitle}
-              </Text>
-            </Box>
-            <Text as="p" className="text-sm">
-              Last updated{' '}
-              <Text suppressHydrationWarning>
-                {createdDate.toLocaleDateString()}
-              </Text>{' '}
-              at{' '}
-              <Text suppressHydrationWarning>
-                {createdDate.toLocaleTimeString()}
-              </Text>
-            </Text>
-          </Box>
           <Box className="flex flex-row items-center space-x-2">
             <Button
               variant="invisible"
