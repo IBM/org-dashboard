@@ -19,7 +19,7 @@ const TopicCell = ({
         return (
           <Box
             className="shadow-xl min-w-64 p-4 rounded space-x-2"
-            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            onClick={(e: { stopPropagation: () => void }) => e.stopPropagation()}
             sx={{
               backgroundColor: 'Background',
               border: '1px solid',
