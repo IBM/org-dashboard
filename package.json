@@ -7,7 +7,7 @@
     "dev:backend": "dotenvx run -- npm run dev --workspace=backend"
   },
   "keywords": [],
-  "author": "GitHub OSPO <ospo@github.com>",
+  "author": "IBM OSPO",
   "license": "MIT",
   "workspaces": [
     "./app",

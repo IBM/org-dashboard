@@ -2,7 +2,7 @@
 
 An actions-powered dashboard to get an overview of your organization's open source repository health.
 
-[![Image preview](./assets/preview.png)](https://github-community-projects.github.io/org-metrics-dashboard)
+[![Image preview](./assets/preview.png)](https://ibm.github.io/org-dashboard)
 
 The dashboard provides a quick overview of your organization's public repositories. It fetches data from the GitHub API using actions and displays it in a github pages site. The dashboard provides the following information about your repositories:
 
@@ -10,13 +10,13 @@ The dashboard provides a quick overview of your organization's public repositori
 - Issue and PR counts
 - Metrics around response times for issues and PRs
 
-Check out the live demo [here](https://github-community-projects.github.io/org-metrics-dashboard).
+Check out the live demo [here](https://ibm.github.io/org-dashboard).
 
 ## Setting up the project for your organization
 
 ### Fork the repository
 
-You will need to [fork this repository](https://github.com/github-community-projects/org-metrics-dashboard/fork) into your org. Alternatively, you can clone this repository and push it to your org.
+You will need to [fork this repository](https://github.com/ibm/org-dashboard/fork) into your org. Alternatively, you can clone this repository and push it to your org.
 
 ### Actions
 
@@ -40,12 +40,12 @@ There is a `config.yml` located in the root of the project that contains the con
 ```yaml
 ---
 # The GitHub organization name
-organization: 'github-community-projects'
+organization: 'ibm'
 # An ISO 8601 date string representing the date to start fetching data from
-since: '2024-02-22'
-# Path of the github pages site. i.e. github-community-projects.github.io/org-metrics-dashboard
+since: '2026-01-01'
+# Path of the github pages site. i.e. ibm.github.io/org-dashboard
 # This will typically be "/{REPOSITORY_NAME}" if you are hosting on GitHub pages
-basePath: '/org-metrics-dashboard'
+basePath: '/org-dashboard'
 ```
 
 - `organization`: The name of the organization you want to fetch data from.
@@ -123,8 +123,8 @@ Check out the [CODEOWNERS](./CODEOWNERS) file to see who to contact for code cha
 
 ## Support
 
-If you need support using this project or have questions about it, please [open an issue in this repository](https://github.com/github-community-projects/org-metrics-dashboard/issues/new) and we'd be happy to help. Requests made directly to GitHub staff or the support team will be redirected here to open an issue. GitHub SLA's and support/services contracts do not apply to this repository.
+If you need support using this project or have questions about it, please [open an issue in this repository](https://github.com/ibm/org-dashboard/issues/new) and we'd be happy to help.
 
 ## More OSPO Tools
 
-Looking for more resources for your open source program office (OSPO)? Check out the [`github-ospo`](https://github.com/github/github-ospo) repo for a variety of tools designed to support your needs.
+Looking for more resources for your open source program office (OSPO)? Check out IBM's open source resources at [ibm.com/opensource](https://www.ibm.com/opensource).
